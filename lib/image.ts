@@ -23,7 +23,7 @@ function toJpeg(src: Source, maxSide: number, quality: number): string {
 export type Shot = {
   dataUrl: string; // ~1024px JPEG for analysis + preview
   base64: string; // dataUrl without prefix
-  thumbnail: string; // small JPEG for the daily log
+  thumbnail: string; // small JPEG for the meal log and detail page
 };
 
 export function shotFrom(src: Source): Shot {
@@ -31,7 +31,8 @@ export function shotFrom(src: Source): Shot {
   return {
     dataUrl,
     base64: dataUrl.slice(dataUrl.indexOf(",") + 1),
-    thumbnail: toJpeg(src, 160, 0.7),
+    // Big enough for the meal detail photo, small enough (~15 KB) to keep many days in localStorage.
+    thumbnail: toJpeg(src, 320, 0.7),
   };
 }
 

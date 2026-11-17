@@ -42,6 +42,29 @@ export type Analysis = z.infer<typeof AnalysisSchema>;
 export type Goal = Macros & { preset: GoalPreset };
 export type GoalPreset = "lose" | "maintain" | "muscle";
 
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
+
+export const MEAL_TYPES: { id: MealType; label: string }[] = [
+  { id: "breakfast", label: "Breakfast" },
+  { id: "lunch", label: "Lunch" },
+  { id: "dinner", label: "Dinner" },
+  { id: "snack", label: "Snack" },
+];
+
+export const MEAL_TYPE_LABEL = Object.fromEntries(MEAL_TYPES.map((t) => [t.id, t.label])) as Record<
+  MealType,
+  string
+>;
+
+/** Best guess from the clock: what most people in Taiwan would call a meal eaten at this hour. */
+export function guessMealType(d: Date): MealType {
+  const h = d.getHours() + d.getMinutes() / 60;
+  if (h >= 5 && h < 10.5) return "breakfast";
+  if (h >= 10.5 && h < 14.5) return "lunch";
+  if (h >= 17 && h < 21) return "dinner";
+  return "snack";
+}
+
 export type Meal = {
   id: string;
   time: string; // ISO
@@ -49,7 +72,14 @@ export type Meal = {
   dishes: Dish[];
   totals: Macros;
   thumbnail?: string; // small data URL
+  mealType?: MealType; // missing on meals saved before meal types existed
+  verdict?: string;
+  suggestions?: Suggestion[];
 };
+
+export function mealTypeOf(meal: Meal): MealType {
+  return meal.mealType ?? guessMealType(new Date(meal.time));
+}
 
 export type AnalyzeRequest = {
   image: string; // base64 JPEG, no data: prefix

@@ -6,7 +6,7 @@ Snap a photo of your meal and Bento Coach:
 - estimates calories, protein, carbs and fat for each one,
 - **coaches you** with 1–2 small, local changes to make the meal fit your day better, such as "add a 滷蛋: +7g protein" or "switch to 微糖: −60 kcal".
 
-Meals are saved in a daily log in your browser, and each scan's advice takes into account what you've already eaten today.
+Meals are saved in a daily log in your browser, sorted into breakfast, lunch, dinner and snacks. You can flip back through earlier days, log a meal you forgot, and open any meal to see how much of your day it covered. Each scan's advice takes into account what you've already eaten that day.
 
 ## Setup
 
@@ -34,7 +34,8 @@ If the camera isn't available, use **Upload photo**, which on phones also opens 
 
 | Part | File |
 |---|---|
-| Today dashboard (goal ring, meal log, goal presets) | `app/page.tsx` |
+| Daily dashboard (date strip, goal ring, meal-type tabs, meal cards, goal presets) | `app/page.tsx` |
+| Meal detail (photo, share of daily goal, coach tip, dishes) | `app/meal/[id]/page.tsx` |
 | Camera capture / upload, result + coach | `app/scan/page.tsx`, `components/*` |
 | Server route calling Claude vision (key stays on the server) | `app/api/analyze/route.ts` |
 | Prompt (Taiwanese-food expertise + coaching rules) | `lib/prompt.ts` |
