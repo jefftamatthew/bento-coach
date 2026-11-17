@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bento Coach
 
-## Getting Started
+Snap a photo of your meal and Bento Coach:
 
-First, run the development server:
+- splits it into dishes (great at 便當, 自助餐 trays, night-market food, bubble tea),
+- estimates calories, protein, carbs and fat for each one,
+- **coaches you** with 1–2 small, local changes to make the meal fit your day better, such as "add a 滷蛋: +7g protein" or "switch to 微糖: −60 kcal".
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Meals are saved in a daily log in your browser, and each scan's advice takes into account what you've already eaten today.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install Node.js 20+ and run `npm install`.
+2. Copy `.env.example` to `.env.local` and put in your Anthropic API key:
+   ```
+   ANTHROPIC_API_KEY=sk-ant-...
+   ```
+3. Run `npm run dev` and open http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Demo mode (no API key)
 
-## Learn More
+If `ANTHROPIC_API_KEY` isn't set, every scan returns one of three sample meals from `lib/demo.ts`, marked with a "Demo result" banner. This lets you click through the whole flow before you have a key. Set `DEMO_MODE=1` in `.env.local` to force demo mode even when a key is set, for example during a presentation with bad Wi-Fi.
 
-To learn more about Next.js, take a look at the following resources:
+## Using a phone camera
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Browsers only allow camera access over HTTPS (or on `localhost`). To test on a phone:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Same Wi-Fi:** run `npm run dev:https`, then open `https://<your-computer-ip>:3000` on the phone and accept the certificate warning.
+- **Deploy:** push to GitHub and import it into Vercel, adding `ANTHROPIC_API_KEY` as an environment variable.
 
-## Deploy on Vercel
+If the camera isn't available, use **Upload photo**, which on phones also opens the camera.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## How it works
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Part | File |
+|---|---|
+| Today dashboard (goal ring, meal log, goal presets) | `app/page.tsx` |
+| Camera capture / upload, result + coach | `app/scan/page.tsx`, `components/*` |
+| Server route calling Claude vision (key stays on the server) | `app/api/analyze/route.ts` |
+| Prompt (Taiwanese-food expertise + coaching rules) | `lib/prompt.ts` |
+| Structured output schema (zod) | `lib/schema.ts` |
+| Daily log in `localStorage` | `lib/storage.ts` |
+
+Photos are resized to 1024px in the browser before upload. The server sends them to `claude-opus-5-5` with a zod schema, so the response is always valid JSON with dishes, macros, a verdict and suggestions.
+
+Numbers are estimates from a photo, not medical advice.

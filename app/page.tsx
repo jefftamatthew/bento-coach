@@ -1,69 +1,138 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { useState } from "react";
+import { MacroRing } from "@/components/MacroRing";
+import { sumDishes, type GoalPreset } from "@/lib/schema";
+import { GOAL_PRESETS, clearDay, deleteMeal, getGoal, getMeals, setGoal } from "@/lib/storage";
+import { useHydrated } from "@/lib/useHydrated";
+
+export default function TodayPage() {
+  const hydrated = useHydrated();
+  const [, setVersion] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const refresh = () => setVersion((v) => v + 1);
+
+  const meals = hydrated ? getMeals() : [];
+  const goal = hydrated ? getGoal() : GOAL_PRESETS.maintain;
+  const eaten = sumDishes(meals.map((m) => m.totals));
+
+  const dateLabel = hydrated
+    ? new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
+    : " ";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="space-y-6">
+      <header className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-muted">{dateLabel}</p>
+          <h1 className="text-3xl font-bold tracking-tight">Bento Coach</h1>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowSettings((s) => !s)}
+          className="rounded-full border border-line bg-card px-4 py-2 text-sm font-medium"
+          aria-expanded={showSettings}
+        >
+          Goal: {GOAL_PRESETS[goal.preset]?.label ?? "Custom"}
+        </button>
+      </header>
+
+      {showSettings && (
+        <section className="space-y-3 rounded-3xl border border-line bg-card p-4">
+          <p className="text-sm font-semibold">Daily goal</p>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(GOAL_PRESETS) as GoalPreset[]).map((p) => {
+              const preset = GOAL_PRESETS[p];
+              const active = goal.preset === p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => {
+                    const { label: _label, ...g } = preset;
+                    void _label;
+                    setGoal(g);
+                    refresh();
+                  }}
+                  className={`rounded-2xl border p-3 text-left text-sm ${
+                    active ? "border-accent bg-accent-soft" : "border-line"
+                  }`}
+                >
+                  <span className="block font-semibold">{preset.label}</span>
+                  <span className="block text-xs text-muted tabular-nums">
+                    {preset.kcal} kcal · {preset.protein_g}g P
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {meals.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Clear all of today's meals?")) {
+                  clearDay();
+                  refresh();
+                }
+              }}
+              className="text-sm font-medium text-warn"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              Reset today
+            </button>
+          )}
+        </section>
+      )}
+
+      <MacroRing eaten={eaten} goal={goal} />
+
+      <Link
+        href="/scan"
+        className="flex items-center justify-center gap-2 rounded-full bg-accent py-4 text-lg font-semibold text-white shadow-md active:scale-[0.98]"
+      >
+        <span aria-hidden>📷</span> Scan a meal
+      </Link>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Today&apos;s meals</h2>
+        {meals.length === 0 ? (
+          <p className="rounded-3xl border border-dashed border-line p-6 text-center text-sm text-muted">
+            Nothing logged yet. Snap your breakfast, a 便當, or that bubble tea.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        ) : (
+          <ul className="space-y-3">
+            {meals.map((m) => (
+              <li key={m.id} className="flex items-center gap-3 rounded-3xl border border-line bg-card p-3">
+                {m.thumbnail ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={m.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" />
+                ) : (
+                  <div className="h-14 w-14 shrink-0 rounded-2xl bg-line" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{m.name}</p>
+                  <p className="text-xs text-muted tabular-nums">
+                    {new Date(m.time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} ·{" "}
+                    {Math.round(m.totals.kcal)} kcal · P {Math.round(m.totals.protein_g)}g · C{" "}
+                    {Math.round(m.totals.carbs_g)}g · F {Math.round(m.totals.fat_g)}g
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteMeal(m.id);
+                    refresh();
+                  }}
+                  aria-label={`Delete ${m.name}`}
+                  className="rounded-full px-2 text-xl leading-none text-muted hover:text-warn"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
