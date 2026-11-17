@@ -31,10 +31,10 @@ export default function TodayPage() {
         <button
           type="button"
           onClick={() => setShowSettings((s) => !s)}
-          className="rounded-full border border-line bg-card px-4 py-2 text-sm font-medium"
+          className="btn-secondary min-h-11 rounded-full px-4 py-2 text-sm font-medium"
           aria-expanded={showSettings}
         >
-          Goal: {GOAL_PRESETS[goal.preset]?.label ?? "Custom"}
+          {hydrated ? `Goal: ${GOAL_PRESETS[goal.preset]?.label ?? "Custom"}` : "Goal"}
         </button>
       </header>
 
@@ -55,8 +55,9 @@ export default function TodayPage() {
                     setGoal(g);
                     refresh();
                   }}
-                  className={`rounded-2xl border p-3 text-left text-sm ${
-                    active ? "border-accent bg-accent-soft" : "border-line"
+                  aria-pressed={active}
+                  className={`rounded-2xl border p-3 text-left text-sm transition-transform active:scale-[0.98] ${
+                    active ? "border-accent bg-accent-soft" : "border-line hover:border-accent"
                   }`}
                 >
                   <span className="block font-semibold">{preset.label}</span>
@@ -76,7 +77,7 @@ export default function TodayPage() {
                   refresh();
                 }
               }}
-              className="text-sm font-medium text-warn"
+              className="min-h-11 text-sm font-medium text-warn-ink hover:underline"
             >
               Reset today
             </button>
@@ -84,18 +85,22 @@ export default function TodayPage() {
         </section>
       )}
 
-      <MacroRing eaten={eaten} goal={goal} />
+      <MacroRing eaten={eaten} goal={goal} loading={!hydrated} />
 
       <Link
         href="/scan"
-        className="flex items-center justify-center gap-2 rounded-full bg-accent py-4 text-lg font-semibold text-white shadow-md active:scale-[0.98]"
+        className="btn-primary flex items-center justify-center rounded-full py-4 text-lg font-semibold shadow-md"
       >
-        <span aria-hidden>📷</span> Scan a meal
+        Scan a meal
       </Link>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">Today&apos;s meals</h2>
-        {meals.length === 0 ? (
+        {!hydrated ? (
+          <p className="p-6 text-center text-sm text-muted" aria-busy="true">
+            Loading today&apos;s meals…
+          </p>
+        ) : meals.length === 0 ? (
           <p className="rounded-3xl border border-dashed border-line p-6 text-center text-sm text-muted">
             Nothing logged yet. Snap your breakfast, a 便當, or that bubble tea.
           </p>
@@ -124,7 +129,7 @@ export default function TodayPage() {
                     refresh();
                   }}
                   aria-label={`Delete ${m.name}`}
-                  className="rounded-full px-2 text-xl leading-none text-muted hover:text-warn"
+                  className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl leading-none text-muted hover:bg-warn-soft hover:text-warn-ink"
                 >
                   ×
                 </button>
