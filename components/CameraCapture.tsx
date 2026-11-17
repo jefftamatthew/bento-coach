@@ -102,7 +102,7 @@ export function CameraCapture({ onShot }: { onShot: (shot: Shot) => void }) {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="rounded-full border border-line bg-card px-5 py-3 text-sm font-semibold"
+          className="btn-secondary rounded-full px-5 py-3 text-sm font-semibold"
         >
           Upload photo
         </button>
@@ -111,13 +111,13 @@ export function CameraCapture({ onShot }: { onShot: (shot: Shot) => void }) {
             type="button"
             onClick={capture}
             aria-label="Take photo"
-            className="h-18 w-18 rounded-full border-4 border-accent bg-card shadow-md active:scale-95"
+            className="h-18 w-18 rounded-full border-4 border-accent bg-card shadow-md transition-transform hover:scale-105 active:scale-95"
           >
             <span className="m-auto block h-13 w-13 rounded-full bg-accent" />
           </button>
         )}
       </div>
-      {status === "live" && message && <p className="text-center text-sm text-warn">{message}</p>}
+      {status === "live" && message && <p className="text-center text-sm text-warn-ink">{message}</p>}
       <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={onFile} />
     </div>
   );
