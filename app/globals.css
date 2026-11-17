@@ -4,15 +4,22 @@
   --bg: #f7f3ec;
   --card: #ffffff;
   --ink: #1f2a24;
-  --muted: #6b7570;
+  --muted: #5d6762;
   --line: #e6dfd3;
   --accent: #2f7d4f;
+  --accent-ink: #266a42;
+  --accent-hover: #24633e;
+  --on-accent: #ffffff;
   --accent-soft: #e3f1e8;
   --warn: #d9692b;
+  --warn-ink: #a8481a;
   --warn-soft: #fbe9de;
   --protein: #c2452d;
   --carbs: #d9a32b;
   --fat: #4a7bb7;
+  --protein-ink: #c2452d;
+  --carbs-ink: #8a6414;
+  --fat-ink: #3f6ea8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,12 +30,19 @@
     --muted: #9aa49f;
     --line: #2d3531;
     --accent: #5cbf85;
+    --accent-ink: #5cbf85;
+    --accent-hover: #7dd3a0;
+    --on-accent: #0f1a14;
     --accent-soft: #1f3529;
     --warn: #f08a4f;
+    --warn-ink: #f08a4f;
     --warn-soft: #3a2619;
     --protein: #e06a52;
     --carbs: #e8bd55;
     --fat: #78a3d9;
+    --protein-ink: #e06a52;
+    --carbs-ink: #e8bd55;
+    --fat-ink: #78a3d9;
   }
 }
 
@@ -39,8 +53,12 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
   --color-accent-soft: var(--accent-soft);
   --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
   --color-warn-soft: var(--warn-soft);
   --color-protein: var(--protein);
   --color-carbs: var(--carbs);
@@ -52,4 +70,63 @@
 body {
   background: var(--bg);
   color: var(--ink);
+}
+
+@layer base {
+  /* Tailwind v4 resets buttons to the default cursor. */
+  button:not(:disabled),
+  [role="button"],
+  a[href],
+  label[for],
+  summary,
+  select {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Filled green action: Scan, Save, Try again. */
+@utility btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  transition:
+    background-color 150ms,
+    transform 100ms;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+/* Outlined secondary action: Retake, Upload, Back, Goal. */
+@utility btn-secondary {
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition:
+    border-color 150ms,
+    transform 100ms;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
 }
